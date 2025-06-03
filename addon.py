@@ -75,12 +75,12 @@ def download_to_cache(cache_path, url):
         return
     else:
         dialog = xbmcgui.DialogProgress()
-        dialog.create("Downloading video", "Please wait...")
+        dialog.create("yt-dlp to kodi", f"Processing url: {url}")
 
         def ytdlp_download_to_cache():
             xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
-            COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
-            COMMAND_LINE_MAX_VIDEO_HEIGHT=360
+            COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}{"" if cache_path.endswith(os.sep) else os.sep }%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
+            COMMAND_LINE_MAX_VIDEO_HEIGHT=1080
 
             output_filename = ""
 
@@ -121,16 +121,15 @@ def download_to_cache(cache_path, url):
                     elif '\n' in output_buffer:
                         output_line, output_buffer = output_buffer.split('\n', 1)
 
-                    if not output_filename:
+                    match = re.search(r'\[download\]\s*(\d+\.\d+)%', output_line)
+                    if match:
+                        percent = float(match.group(1))
+                        dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
+                    elif not output_filename:
                         match = re.search(r'\[Merger\] Merging formats into "(.*)"$', output_line)
                         if match:
                             output_filename = os.path.abspath(match.group(1).strip())
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
-                    else:
-                        match = re.search(r'\[download\]\s*(\d+\.\d+)%', output_line)
-                        if match:
-                            percent = float(match.group(1))
-                            dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
                     #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
 
                 xbmc.sleep(100)
