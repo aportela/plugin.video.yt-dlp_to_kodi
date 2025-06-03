@@ -5,15 +5,20 @@ import xbmcgui
 import urllib.parse
 import sys
 import os
+import threading
+import subprocess
 import tempfile
 from pathlib import Path
+import re
+
+EXAMPLE_VIDEO_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
 plugin_url = sys.argv[0]
 handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
+ADDON = xbmcaddon.Addon()
 
 def get_cache_path():
-    ADDON = xbmcaddon.Addon()
     SETTINGS_ROOT_PATH = ADDON.getSetting('data_path')
     ROOT_PATH = None
     if SETTINGS_ROOT_PATH is not None and os.path.exists(SETTINGS_ROOT_PATH):
@@ -44,7 +49,7 @@ xbmc.LOGFATAL
 
 def list_directory(path):
     if not os.path.exists(path):
-        xbmc.log(f"yt-dlp: list_directory -> path not found: {path}", level=xbmc.LOGERROR)
+        xbmc.log(f"yt-dlp_to_kodi: list_directory() -> path not found: {path}", level=xbmc.LOGERROR)
         xbmcgui.Dialog().notification("yt-dlp_to_kodi", f"Path not found: {path}", xbmcgui.NOTIFICATION_ERROR)
         xbmcplugin.endOfDirectory(handle)
         return
@@ -62,9 +67,129 @@ def list_directory(path):
 
     xbmcplugin.endOfDirectory(handle)
 
+def download_to_cache(cache_path, url):
+
+    if not os.path.exists(cache_path):
+        xbmc.log(f"yt-dlp_to_kodi: download_to_cache() -> path not found: {cache_path}", level=xbmc.LOGERROR)
+        xbmcgui.Dialog().notification("yt-dlp_to_kodi", f"Path not found: {cache_path}", xbmcgui.NOTIFICATION_ERROR)
+        return
+    else:
+        dialog = xbmcgui.DialogProgress()
+        dialog.create("Downloading video", "Please wait...")
+
+        def ytdlp_download_to_cache():
+            xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
+            COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
+            COMMAND_LINE_MAX_VIDEO_HEIGHT=360
+
+            output_filename = ""
+
+            commandline = [
+                'yt-dlp',
+                '--no-warnings',
+                '--no-color',
+                '--progress',
+                '-f', f'bestvideo[height<=?{COMMAND_LINE_MAX_VIDEO_HEIGHT}]+bestaudio/best',
+                '--force-overwrite',
+                '--restrict-filenames',
+                '-o', COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE,
+                # TODO: write thumbnail & generate NFO
+                url
+            ]
+
+            yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True)
+
+            percent = 0
+            output_buffer = ""
+            output_line = ""
+
+            while True:
+
+                output = yt_dlp_proc.stdout.read(1024)
+
+                if not output and yt_dlp_proc.poll() is not None:
+                    break
+
+                if isinstance(output, bytes):
+                    output = output.decode('utf-8')
+
+                output_buffer += output
+
+                while '\r' in output_buffer or '\n' in output_buffer:
+                    if '\r' in output_buffer:
+                        output_line, output_buffer = output_buffer.split('\r', 1)
+                    elif '\n' in output_buffer:
+                        output_line, output_buffer = output_buffer.split('\n', 1)
+
+                    if not output_filename:
+                        match = re.search(r'\[Merger\] Merging formats into "(.*)"$', output_line)
+                        if match:
+                            output_filename = os.path.abspath(match.group(1).strip())
+                            xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
+                    else:
+                        match = re.search(r'\[download\]\s*(\d+\.\d+)%', output_line)
+                        if match:
+                            percent = float(match.group(1))
+                            dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
+                    #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
+
+                xbmc.sleep(100)
+
+            for error_linea in yt_dlp_proc.stderr:
+                xbmc.log(f"yt-dlp_to_kodi: {error_linea}", level=xbmc.LOGERROR)
+
+
+            yt_dlp_proc.communicate()
+
+            dialog.close()
+
+            if yt_dlp_proc.returncode == 0:
+                xbmc.log(f"yt-dlp_to_kodi: download success", level=xbmc.LOGDEBUG)
+
+                xbmc.executebuiltin('Notification("Download sucess", "Video has been downloaded", 3000)')
+
+                if os.path.exists(output_filename):
+                    file = output_filename.replace('\\', '/') # REQUIRED ?
+                    xbmc.log(f"yt-dlp: playing: {file}", level=xbmc.LOGINFO)
+                    # TODO play using play_cache_item
+                    player = xbmc.Player()
+                    player.play(file)
+                else:
+                    xbmc.log(f"yt-dlp_to_kodi: file not found {output_filename}", level=xbmc.LOGERROR)
+                    xbmc.executebuiltin('Notification("Error", "Downloaded file not found", 3000)')
+            else:
+                xbmc.log(f"yt-dlp_to_kodi: download error", level=xbmc.LOGINFO)
+                xbmc.executebuiltin('Notification("Download error", "Error while downloading file", 3000)')
+
+        descarga_thread = threading.Thread(target=ytdlp_download_to_cache)
+        descarga_thread.start()
+
+def show_addon_menu():
+    debug = ADDON.getSetting('debug')
+    if debug == 'true':
+        test_video_item = xbmcgui.ListItem(label='Youtube test video')
+        info = test_video_item.getVideoInfoTag()
+        info.setTitle("Youtube test video")
+        url_with_param = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_URL)}"
+        xbmcplugin.addDirectoryItem(handle, url_with_param, test_video_item, isFolder=False)
+    cache_path = get_cache_path()
+    xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGDEBUG)
+    browse_cache_items = xbmcgui.ListItem(label='Cached videos')
+    url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(cache_path)}"
+    xbmcplugin.addDirectoryItem(handle, url, browse_cache_items, isFolder=True)
+    open_settings_item = xbmcgui.ListItem(label='Open settings')
+    url = f"{plugin_url}?action=open_settings"
+    xbmcplugin.addDirectoryItem(handle, url, open_settings_item, isFolder=False)
+    xbmcplugin.endOfDirectory(handle)
+
 def main():
     if 'action' in args:
-        if args['action'][0] == 'open_settings':
+        if args['action'][0] == 'process' and 'url' in args:
+            url = args['url'][0]
+            xbmc.log(f"yt-dlp_to_kodi: processing url {url}", level=xbmc.LOGDEBUG)
+            cache_path = get_cache_path()
+            download_to_cache(cache_path, url)
+        elif args['action'][0] == 'open_settings':
             xbmc.log(f"yt-dlp_to_kodi: opening settings", level=xbmc.LOGDEBUG)
             xbmc.executebuiltin(f"Addon.OpenSettings({xbmcaddon.Addon().getAddonInfo('id')})")
             return
@@ -83,15 +208,7 @@ def main():
                 xbmcgui.Dialog().notification("yt-dlp_to_kodi", f"file not found: {path}", xbmcgui.NOTIFICATION_ERROR)
                 return
     else:
-        cache_path = get_cache_path()
-        xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGDEBUG)
-        browse_cache_items = xbmcgui.ListItem(label='Cached videos')
-        url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(cache_path)}"
-        xbmcplugin.addDirectoryItem(handle, url, browse_cache_items, isFolder=True)
-        open_settings_item = xbmcgui.ListItem(label='Open settings')
-        url = f"{plugin_url}?action=open_settings"
-        xbmcplugin.addDirectoryItem(handle, url, open_settings_item, isFolder=False)
-        xbmcplugin.endOfDirectory(handle)
+        show_addon_menu()
 
 if __name__ == '__main__':
     main()
