@@ -1,5 +1,6 @@
 <settings>
     <category label="General">
         <setting id="debug" type="bool" label="Enable debug" default="false" />
+        <setting id="data_path" type="folder" label="Data path" source="auto" option="false"/>
     </category>
 </settings>
