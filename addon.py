@@ -29,6 +29,15 @@ plugin_url = sys.argv[0]
 handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
 
+# available log levels
+"""
+xbmc.LOGDEBUG
+xbmc.LOGINFO
+xbmc.LOGWARNING
+xbmc.LOGERROR
+xbmc.LOGFATAL
+"""
+
 # notification example
 #xbmcgui.Dialog().notification("yt-dlp_to_kodi", "Starting...", xbmcgui.NOTIFICATION_INFO, 500)
 
@@ -54,8 +63,6 @@ def list_directory(path):
     xbmcplugin.endOfDirectory(handle)
 
 def main():
-    cache_path = get_cache_path()
-    xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGINFO)
     if 'action' in args:
         if args['action'][0] == 'open_settings':
             xbmc.executebuiltin(f"Addon.OpenSettings({xbmcaddon.Addon().getAddonInfo('id')})")
@@ -64,6 +71,8 @@ def main():
             path = args['path'][0]
             list_directory(path)
     else:
+        cache_path = get_cache_path()
+        xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGDEBUG)
         browse_cache_items = xbmcgui.ListItem(label='Cached videos')
         url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(cache_path)}"
         xbmcplugin.addDirectoryItem(handle, url, browse_cache_items, isFolder=True)
