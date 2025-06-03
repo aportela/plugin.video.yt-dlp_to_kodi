@@ -11,7 +11,8 @@ import tempfile
 from pathlib import Path
 import re
 
-EXAMPLE_VIDEO_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+EXAMPLE_VIDEO_YOUTUBE_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+EXAMPLE_VIDEO_TWITCH_URL = "https://www.twitch.tv/videos/799499623"
 
 plugin_url = sys.argv[0]
 handle = int(sys.argv[1])
@@ -90,12 +91,14 @@ def download_to_cache(cache_path, url):
                 '--no-color',
                 '--progress',
                 '-f', f'bestvideo[height<=?{COMMAND_LINE_MAX_VIDEO_HEIGHT}]+bestaudio/best',
-                '--force-overwrite',
+                '--force-overwrite', # TODO: use settings
                 '--restrict-filenames',
                 '-o', COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE,
                 # TODO: write thumbnail & generate NFO
                 url
             ]
+
+            xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
 
             yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True)
 
@@ -130,13 +133,19 @@ def download_to_cache(cache_path, url):
                         if match:
                             output_filename = os.path.abspath(match.group(1).strip())
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
+                        else:
+                            # required for twitch streams
+                            match = re.search(r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', output_line)
+                            if match:
+                                output_filename = os.path.abspath(match.group(1).strip())
+                                xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
+
                     #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
 
                 xbmc.sleep(100)
 
             for error_linea in yt_dlp_proc.stderr:
                 xbmc.log(f"yt-dlp_to_kodi: {error_linea}", level=xbmc.LOGERROR)
-
 
             yt_dlp_proc.communicate()
 
@@ -169,7 +178,12 @@ def show_addon_menu():
         test_video_item = xbmcgui.ListItem(label='Youtube test video')
         info = test_video_item.getVideoInfoTag()
         info.setTitle("Youtube test video")
-        url_with_param = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_URL)}"
+        url_with_param = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_YOUTUBE_URL)}"
+        xbmcplugin.addDirectoryItem(handle, url_with_param, test_video_item, isFolder=False)
+        test_video_item = xbmcgui.ListItem(label='Twitch test video')
+        info = test_video_item.getVideoInfoTag()
+        info.setTitle("Twitch test video")
+        url_with_param = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_TWITCH_URL)}"
         xbmcplugin.addDirectoryItem(handle, url_with_param, test_video_item, isFolder=False)
     cache_path = get_cache_path()
     xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGDEBUG)
