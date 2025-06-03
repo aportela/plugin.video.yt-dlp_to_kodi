@@ -52,7 +52,6 @@ def list_directory(path):
         full_path = os.path.join(path, entry)
         if os.path.isdir(full_path):
             li = xbmcgui.ListItem(label=entry)
-            # TODO
             url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(full_path)}"
             xbmcplugin.addDirectoryItem(handle, url, li, isFolder=True)
         else:
@@ -73,6 +72,16 @@ def main():
             path = args['path'][0]
             xbmc.log(f"yt-dlp_to_kodi: browsing cache path {path}", level=xbmc.LOGDEBUG)
             list_directory(path)
+        elif args['action'][0] == 'play_cache_item' and 'path' in args:
+            path = args['path'][0]
+            if os.path.exists(path):
+                xbmc.log(f"yt-dlp_to_kodi: playing file {path}", level=xbmc.LOGDEBUG)
+                player = xbmc.Player()
+                player.play(path)
+            else:
+                xbmc.log(f"yt-dlp: file not found: {path}", level=xbmc.LOGERROR)
+                xbmcgui.Dialog().notification("yt-dlp_to_kodi", f"file not found: {path}", xbmcgui.NOTIFICATION_ERROR)
+                return
     else:
         cache_path = get_cache_path()
         xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGDEBUG)
