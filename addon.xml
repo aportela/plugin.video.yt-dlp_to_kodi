@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.yt-dlp_to_kodi" name="yt-dlp to kodi" version="0.10" provider-name="aportela">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="addon.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Download streams for multiple sites and watch on kodi</summary>
+        <description lang="en">Download streams for multiple sites and watch on kodi</description>
+        <language>en</language>
+        <platform>all</platform>
+        <website>https://github.com/aportela/plugin.video.yt-dlp_to_kodi</website>
+        <email>766f6964+github@gmail.com</email>
+        <source>https://github.com/aportela/plugin.video.yt-dlp_to_kodi</source>
+        <license>GPL-3.0</license>
+        <assets>
+            <icon>resources/media/icon.png</icon>
+            <fanart>resources/fanart.png</fanart>
+        </assets>
+    </extension>
+</addon>

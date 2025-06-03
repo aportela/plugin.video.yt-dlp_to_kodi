@@ -1,0 +1,5 @@
+<settings>
+    <category label="General">
+        <setting id="debug" type="bool" label="Emable debug" default="false" />
+    </category>
+</settings>
