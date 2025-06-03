@@ -35,7 +35,6 @@ def get_cache_path():
     CACHE_BASE_PATH = str(path)
     return CACHE_BASE_PATH
 
-
 # available log levels
 """
 xbmc.LOGDEBUG
@@ -81,7 +80,7 @@ def download_to_cache(cache_path, url):
         def ytdlp_download_to_cache():
             xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
             COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}{"" if cache_path.endswith(os.sep) else os.sep }%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
-            COMMAND_LINE_MAX_VIDEO_HEIGHT=1080
+            COMMAND_LINE_MAX_VIDEO_HEIGHT=int(ADDON.getSetting('max_resolution')) or 1080
 
             output_filename = ""
 
