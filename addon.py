@@ -8,6 +8,10 @@ import os
 import tempfile
 from pathlib import Path
 
+plugin_url = sys.argv[0]
+handle = int(sys.argv[1])
+args = urllib.parse.parse_qs(sys.argv[2][1:])
+
 def get_cache_path():
     ADDON = xbmcaddon.Addon()
     SETTINGS_ROOT_PATH = ADDON.getSetting('data_path')
@@ -25,9 +29,6 @@ def get_cache_path():
     CACHE_BASE_PATH = str(path)
     return CACHE_BASE_PATH
 
-plugin_url = sys.argv[0]
-handle = int(sys.argv[1])
-args = urllib.parse.parse_qs(sys.argv[2][1:])
 
 # available log levels
 """
@@ -65,10 +66,12 @@ def list_directory(path):
 def main():
     if 'action' in args:
         if args['action'][0] == 'open_settings':
+            xbmc.log(f"yt-dlp_to_kodi: opening settings", level=xbmc.LOGDEBUG)
             xbmc.executebuiltin(f"Addon.OpenSettings({xbmcaddon.Addon().getAddonInfo('id')})")
             return
         elif args['action'][0] == 'browse_cache' and 'path' in args:
             path = args['path'][0]
+            xbmc.log(f"yt-dlp_to_kodi: browsing cache path {path}", level=xbmc.LOGDEBUG)
             list_directory(path)
     else:
         cache_path = get_cache_path()
