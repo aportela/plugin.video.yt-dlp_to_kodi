@@ -87,24 +87,44 @@ def download_to_cache(cache_path, url):
 
             commandline = [
                 'yt-dlp',
+                # Ignore warnings
                 '--no-warnings',
+                # remove ANSI colors
                 '--no-color',
-                '--newline',
+                # Show progress bar, even if in quiet mode
                 '--progress',
+                # Output progress bar as new lines
+                '--newline',
+                # Video format code, see "FORMAT SELECTION" for more details
                 '-f', f'bestvideo[height<=?{COMMAND_LINE_MAX_VIDEO_HEIGHT}]+bestaudio/best',
+                # Restrict filenames to only ASCII characters, and avoid "&" and spaces in filenames
                 '--restrict-filenames',
+                # Force filenames to be Windows-compatible
+                '--windows-filenames',
+                # Resume partially downloaded files/fragments (default)
+                '--continue',
+                # Output filename template; see "OUTPUT TEMPLATE" for details
                 '-o', COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE,
-                # TODO: write thumbnail & generate NFO
+                # main URL
                 url
             ]
 
             if ADDON.getSetting('force_overwrite') == "true":
+                # Overwrite all video and metadata files. This option includes --no-continue
                 commandline.insert((len(commandline) - 1), '--force-overwrite')
 
-            if True or ADDON.getSetting('save_thumbnail') == "true":
+            if ADDON.getSetting('save_thumbnail') == "true":
+                # Write thumbnail image to disk
                 commandline.insert((len(commandline) - 1), '--write-thumbnail')
+                # Convert the thumbnails to another format (currently supported: jpg, png, webp).
+                # You can specify multiple rules using similar syntax as "--remux-video".
+                # Use "--convert-thumbnails none" to disable conversion (default)
                 commandline.insert((len(commandline) - 1), '--convert-thumbnails')
                 commandline.insert((len(commandline) - 1), 'jpg')
+
+            if ADDON.getSetting('save_nfo') == "true":
+                # Write video metadata to a .info.json file (this may contain personal information)
+                commandline.insert((len(commandline) - 1), '--write-info-json')
 
             xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
 
