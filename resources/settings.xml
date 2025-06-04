@@ -4,6 +4,7 @@
         <setting id="show_notifications" type="bool" label="Show notifications" default="true" />
     </category>
     <category label="Metadata">
+        <setting id="save_nfo" type="bool" label="Save NFO" default="true" />
         <setting id="save_thumbnail" type="bool" label="Save thumbnail" default="true" />
     </category>
     <category label="yt-dlp options">
