@@ -117,30 +117,38 @@ def download_to_cache(cache_path, url):
                 if isinstance(output, bytes):
                     output = output.decode('utf-8')
 
+
                 output_line = output.strip()
 
-                match = re.search(r'\[download\]\s*(\d+\.\d+)%', output_line)
-                if match:
-                    percent = float(match.group(1))
-                    dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
-                elif not output_filename:
-                    match = re.search(r'\[Merger\] Merging formats into "(.*)"$', output_line)
-                    if match:
-                        output_filename = os.path.abspath(match.group(1).strip())
-                        xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
-                    else:
-                        # required for already downloaded files
-                        match = re.search(r'\[download\] (.*) has already been downloaded$', output_line)
-                        if match:
-                            output_filename = os.path.abspath(match.group(1).strip())
-                            xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
-                        else:
-                            # required for twitch streams
-                            match = re.search(r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', output_line)
-                            if match:
-                                output_filename = os.path.abspath(match.group(1).strip())
-                                xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
                 #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
+
+                patterns = [
+                    (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
+                    (r'\[Merger\] Merging formats into "(.*)"$', lambda match: ('merger', os.path.abspath(match.group(1).strip()))),
+                    (r'\[download\] (.*) has already been downloaded$', lambda match: ('already_downloaded', os.path.abspath(match.group(1).strip()))),
+                    (r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', lambda match: ('fixup', os.path.abspath(match.group(1).strip()))),
+                    (r'Error: (.*)$', lambda match: ('error', match.group(1)))
+                ]
+
+                for pattern, action in patterns:
+                    match = re.search(pattern, output_line)
+                    if match:
+                        result_type, result = action(match)
+                        if result_type == 'percent':
+                            percent = result
+                            dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
+                        elif result_type == 'merger':
+                            output_filename = result
+                            xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
+                        elif result_type == 'already_downloaded':
+                            output_filename = result
+                            xbmc.log(f"yt-dlp_to_kodi: already downloaded file => {output_filename}", level=xbmc.LOGINFO)
+                        elif result_type == 'fixup':
+                            output_filename = result
+                            xbmc.log(f"yt-dlp_to_kodi: fixup file => {output_filename}", level=xbmc.LOGINFO)
+                        elif result_type == 'error':
+                            xbmc.log(f"yt-dlp_to_kodi: error occurred: {result}", level=xbmc.LOGERROR)
+                        break
                 xbmc.sleep(100)
 
             for error_linea in yt_dlp_proc.stderr:
