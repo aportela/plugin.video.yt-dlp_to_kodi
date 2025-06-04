@@ -136,7 +136,7 @@ def download_to_cache(cache_path, url):
                         result_type, result = action(match)
                         if result_type == 'percent':
                             percent = result
-                            dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
+                            dialog.update(int(percent), f"Download progress: {percent:.2f}%")
                         elif result_type == 'merger':
                             output_filename = result
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
@@ -161,7 +161,7 @@ def download_to_cache(cache_path, url):
             if yt_dlp_proc.returncode == 0:
                 xbmc.log(f"yt-dlp_to_kodi: download success", level=xbmc.LOGDEBUG)
 
-                xbmc.executebuiltin('Notification("Download sucess", "Video has been downloaded", 3000)')
+                xbmc.executebuiltin('Notification("yt-dlp to kodi", "Video has been downloaded, started playing...", 3000)')
 
                 if os.path.exists(output_filename):
                     file = output_filename.replace('\\', '/') # REQUIRED ?
