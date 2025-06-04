@@ -1,8 +1,17 @@
 <settings>
     <category label="General">
-        <setting id="debug" type="bool" label="Enable debug" default="false" />
         <setting id="data_path" type="folder" label="Data path" source="auto" option="false" />
+        <setting id="show_notifications" type="bool" label="Show notifications" default="true" />
+    </category>
+    <category label="Metadata">
+        <setting id="save_metadata" type="bool" label="Save metadata (NFO &amp; thumbnail)" default="false" />
+    </category>
+    <category label="yt-dlp options">
         <setting id="max_resolution" type="select" label="Max resolution" default="1080" values="4320|2160|1440|1080|720|480|360|240|144" />
         <setting id="force_overwrite" type="bool" label="Force overwrite existing files" default="false" />
+        <setting type="sep" label="aaaa" />
+    </category>
+    <category label="Debug">
+        <setting id="debug" type="bool" label="Enable debug" default="false" />
     </category>
 </settings>
