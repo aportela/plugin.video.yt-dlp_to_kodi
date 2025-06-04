@@ -153,8 +153,8 @@ def download_to_cache(cache_path, url):
                 patterns = [
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
                     (r'\[Merger\] Merging formats into "(.*)"$', lambda match: ('merger', os.path.abspath(match.group(1).strip()))),
-                    (r'\[info\] Writing video thumbnail \d+ to: "(.*)"$', lambda match: ('thumbnail_path', os.path.abspath(match.group(1).strip()))),
-                    (r'\[info\] Writing video metadata as JSON to: "(.*)"$', lambda match: ('json_metadata_path', os.path.abspath(match.group(1).strip()))),
+                    (r'\[info\] Writing video thumbnail \d+ to: (.*)$', lambda match: ('thumbnail_path', os.path.abspath(match.group(1).strip()))),
+                    (r'Writing video metadata as JSON to: (.*)$', lambda match: ('json_metadata_path', os.path.abspath(match.group(1).strip()))),
                     (r'\[download\] (.*) has already been downloaded$', lambda match: ('already_downloaded', os.path.abspath(match.group(1).strip()))),
                     (r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', lambda match: ('fixup', os.path.abspath(match.group(1).strip()))),
                     (r'Error: (.*)$', lambda match: ('error', match.group(1)))
