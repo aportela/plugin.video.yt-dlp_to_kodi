@@ -88,6 +88,7 @@ def download_to_cache(cache_path, url):
                 'yt-dlp',
                 '--no-warnings',
                 '--no-color',
+                '--newline',
                 '--progress',
                 '-f', f'bestvideo[height<=?{COMMAND_LINE_MAX_VIDEO_HEIGHT}]+bestaudio/best',
                 '--restrict-filenames',
@@ -104,12 +105,11 @@ def download_to_cache(cache_path, url):
             yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True)
 
             percent = 0
-            output_buffer = ""
             output_line = ""
 
             while True:
 
-                output = yt_dlp_proc.stdout.read(1024)
+                output = yt_dlp_proc.stdout.readline()
 
                 if not output and yt_dlp_proc.poll() is not None:
                     break
@@ -117,36 +117,30 @@ def download_to_cache(cache_path, url):
                 if isinstance(output, bytes):
                     output = output.decode('utf-8')
 
-                output_buffer += output
+                output_line = output.strip()
 
-                while '\r' in output_buffer or '\n' in output_buffer:
-                    if '\r' in output_buffer:
-                        output_line, output_buffer = output_buffer.split('\r', 1)
-                    elif '\n' in output_buffer:
-                        output_line, output_buffer = output_buffer.split('\n', 1)
-
-                    match = re.search(r'\[download\]\s*(\d+\.\d+)%', output_line)
+                match = re.search(r'\[download\]\s*(\d+\.\d+)%', output_line)
+                if match:
+                    percent = float(match.group(1))
+                    dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
+                elif not output_filename:
+                    match = re.search(r'\[Merger\] Merging formats into "(.*)"$', output_line)
                     if match:
-                        percent = float(match.group(1))
-                        dialog.update(int(percent), f"Downloaded: {percent:.2f}%")
-                    elif not output_filename:
-                        match = re.search(r'\[Merger\] Merging formats into "(.*)"$', output_line)
+                        output_filename = os.path.abspath(match.group(1).strip())
+                        xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
+                    else:
+                        # required for already downloaded files
+                        match = re.search(r'\[download\] (.*) has already been downloaded$', output_line)
                         if match:
                             output_filename = os.path.abspath(match.group(1).strip())
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
                         else:
-                            # required for already downloaded files
-                            match = re.search(r'\[download\] (.*) has already been downloaded$', output_line)
+                            # required for twitch streams
+                            match = re.search(r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', output_line)
                             if match:
                                 output_filename = os.path.abspath(match.group(1).strip())
                                 xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
-                            else:
-                                # required for twitch streams
-                                match = re.search(r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', output_line)
-                                if match:
-                                    output_filename = os.path.abspath(match.group(1).strip())
-                                    xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
-                    #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
+                #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
                 xbmc.sleep(100)
 
             for error_linea in yt_dlp_proc.stderr:
