@@ -126,6 +126,8 @@ def download_to_cache(cache_path, url):
             output_thumbnail = ""
             output_json_metadata = ""
 
+            # TODO:
+            # MARKETS/CHAPTERS --parse-chapters --merge-output-format mkv
             commandline = [
                 'yt-dlp',
                 # Ignore warnings
@@ -149,6 +151,15 @@ def download_to_cache(cache_path, url):
                 # main URL
                 url
             ]
+
+            if ADDON.getSetting('save_subtitles') == "true":
+                commandline.insert((len(commandline) - 1), '--write-subs')
+                commandline.insert((len(commandline) - 1), '--write-auto-subs')
+                commandline.insert((len(commandline) - 1), '--sub-lang')
+                #commandline.insert((len(commandline) - 1), xbmc.getLanguage().split('_')[0])
+                commandline.insert((len(commandline) - 1), 'en')
+                #commandline.insert((len(commandline) - 1), '--convert-subs')
+                #commandline.insert((len(commandline) - 1), 'srt')
 
             if ADDON.getSetting('force_overwrite') == "true":
                 # Overwrite all video and metadata files. This option includes --no-continue
