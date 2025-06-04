@@ -97,7 +97,7 @@ def download_to_cache(cache_path, url):
             ]
 
             if ADDON.getSetting('force_overwrite') == "true":
-                commandline.insert(6, '--force-overwrite')
+                commandline.insert((len(commandline) - 1), '--force-overwrite')
 
             xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
 
