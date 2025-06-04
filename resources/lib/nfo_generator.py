@@ -5,6 +5,19 @@ import os
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+def parse_nfo(nfo_path):
+    try:
+        tree = ET.parse(nfo_path)
+        root = tree.getroot()
+
+        title = root.findtext('title', default='Unknown Title')
+        year = root.findtext('year', default='')
+        plot = root.findtext('plot', default='')
+
+        return title, year, plot
+    except Exception as e:
+        return None, None, None
+
 def generate_nfo(info_json_path, nfo_path = None):
     if not os.path.isfile(info_json_path):
         print(f"Error: File {info_json_path} not found.")

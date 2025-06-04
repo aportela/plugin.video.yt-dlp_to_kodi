@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 import re
 
-from resources.lib.nfo_generator import generate_nfo
+from resources.lib.nfo_generator import parse_nfo, generate_nfo
 
 EXAMPLE_VIDEO_YOUTUBE_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 EXAMPLE_VIDEO_TWITCH_URL = "https://www.twitch.tv/videos/799499623"
@@ -62,10 +62,46 @@ def list_directory(path):
             url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(full_path)}"
             xbmcplugin.addDirectoryItem(handle, url, li, isFolder=True)
         else:
-            li = xbmcgui.ListItem(label=entry)
-            # TODO
-            url = f"{plugin_url}?action=play_cache_item&path={urllib.parse.quote_plus(full_path)}"
-            xbmcplugin.addDirectoryItem(handle, url, li, isFolder=False)
+            video_exts = ['.mp4', '.mkv', '.avi', '.webm']
+            ext = os.path.splitext(full_path)[1].lower()
+            if ext in video_exts:
+                base_name = os.path.splitext(full_path)[0]
+                nfo_path = os.path.join(path, base_name + '.nfo')
+
+                title = full_path
+                year = ''
+                plot = ''
+
+                if os.path.exists(nfo_path):
+                    nfo_title, nfo_year, nfo_plot = parse_nfo(nfo_path)
+                    if nfo_title:
+                        title = nfo_title
+                    if nfo_year:
+                        year = nfo_year
+                    if nfo_plot:
+                        plot = nfo_plot
+
+                li = xbmcgui.ListItem(label=title)
+                fanart = None
+                thumb = None
+                base_name = os.path.splitext(full_path)[0]
+                for img_ext in ['.jpg', '.png']:
+                    img_path = os.path.join(path, base_name + img_ext)
+                    if os.path.exists(img_path):
+                        thumb = img_path
+                        fanart = img_path # TODO: channel background as fanart
+                        break
+                if thumb:
+                    li.setArt({'thumb': thumb, 'fanart': fanart})
+                info_labels = {
+                    'title': title,
+                    'year': year,
+                    'plot': plot,
+                    'mediatype': 'movie'
+                }
+                li.setInfo('video', info_labels)
+                url = f"{plugin_url}?action=play_cache_item&path={urllib.parse.quote_plus(full_path)}"
+                xbmcplugin.addDirectoryItem(handle, url, li, isFolder=False)
 
     xbmcplugin.endOfDirectory(handle)
 
@@ -227,26 +263,32 @@ def download_to_cache(cache_path, url):
         descarga_thread.start()
 
 def show_addon_menu():
-    debug = ADDON.getSetting('debug')
-    if debug == 'true':
-        test_video_item = xbmcgui.ListItem(label='Youtube test video')
-        info = test_video_item.getVideoInfoTag()
-        info.setTitle("Youtube test video")
-        url_with_param = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_YOUTUBE_URL)}"
-        xbmcplugin.addDirectoryItem(handle, url_with_param, test_video_item, isFolder=False)
-        test_video_item = xbmcgui.ListItem(label='Twitch test video')
-        info = test_video_item.getVideoInfoTag()
-        info.setTitle("Twitch test video")
-        url_with_param = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_TWITCH_URL)}"
-        xbmcplugin.addDirectoryItem(handle, url_with_param, test_video_item, isFolder=False)
     cache_path = get_cache_path()
     xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGDEBUG)
-    browse_cache_items = xbmcgui.ListItem(label='Cached videos')
+    item = xbmcgui.ListItem(label='Cached videos')
     url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(cache_path)}"
-    xbmcplugin.addDirectoryItem(handle, url, browse_cache_items, isFolder=True)
-    open_settings_item = xbmcgui.ListItem(label='Open settings')
+    xbmcplugin.addDirectoryItem(handle, url, item, isFolder=True)
+    item = xbmcgui.ListItem(label='Settings')
     url = f"{plugin_url}?action=open_settings"
-    xbmcplugin.addDirectoryItem(handle, url, open_settings_item, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle, url, item, isFolder=False)
+    debug = ADDON.getSetting('debug')
+    if debug == 'true':
+        item = xbmcgui.ListItem(label='Debug tests')
+        url = f"{plugin_url}?action=show_debug_tests_submenu"
+        xbmcplugin.addDirectoryItem(handle, url, item, isFolder=True)
+    xbmcplugin.endOfDirectory(handle)
+
+def show_addon_debug_tests_submenu():
+    item = xbmcgui.ListItem(label='Test [youtube] video')
+    info = item.getVideoInfoTag()
+    info.setTitle("Test [youtube] video")
+    url = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_YOUTUBE_URL)}"
+    xbmcplugin.addDirectoryItem(handle, url, item, isFolder=False)
+    item = xbmcgui.ListItem(label='Test [twitch] video')
+    info = item.getVideoInfoTag()
+    info.setTitle("Test [twitch] video")
+    url = f"{plugin_url}?action=process&url={urllib.parse.quote_plus(EXAMPLE_VIDEO_TWITCH_URL)}"
+    xbmcplugin.addDirectoryItem(handle, url, item, isFolder=False)
     xbmcplugin.endOfDirectory(handle)
 
 def main():
@@ -264,6 +306,8 @@ def main():
             path = args['path'][0]
             xbmc.log(f"yt-dlp_to_kodi: browsing cache path {path}", level=xbmc.LOGDEBUG)
             list_directory(path)
+        elif args['action'][0] == 'show_debug_tests_submenu':
+            show_addon_debug_tests_submenu()
         elif args['action'][0] == 'play_cache_item' and 'path' in args:
             path = args['path'][0]
             if os.path.exists(path):
