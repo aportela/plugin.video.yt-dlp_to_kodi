@@ -84,6 +84,7 @@ def download_to_cache(cache_path, url):
 
             output_filename = ""
             output_thumbnail = ""
+            output_json_metadata = ""
 
             commandline = [
                 'yt-dlp',
@@ -152,6 +153,7 @@ def download_to_cache(cache_path, url):
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
                     (r'\[Merger\] Merging formats into "(.*)"$', lambda match: ('merger', os.path.abspath(match.group(1).strip()))),
                     (r'\[info\] Writing video thumbnail \d+ to: "(.*)"$', lambda match: ('thumbnail_path', os.path.abspath(match.group(1).strip()))),
+                    (r'\[info\] Writing video metadata as JSON to: "(.*)"$', lambda match: ('json_metadata_path', os.path.abspath(match.group(1).strip()))),
                     (r'\[download\] (.*) has already been downloaded$', lambda match: ('already_downloaded', os.path.abspath(match.group(1).strip()))),
                     (r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', lambda match: ('fixup', os.path.abspath(match.group(1).strip()))),
                     (r'Error: (.*)$', lambda match: ('error', match.group(1)))
@@ -170,6 +172,9 @@ def download_to_cache(cache_path, url):
                         elif result_type == 'thumbnail_path':
                             output_thumbnail = result
                             xbmc.log(f"yt-dlp_to_kodi: output thumbnail => {output_thumbnail}", level=xbmc.LOGINFO)
+                        elif result_type == 'json_metadata_path':
+                            output_json_metadata = result
+                            xbmc.log(f"yt-dlp_to_kodi: output json metadata => {output_json_metadata}", level=xbmc.LOGINFO)
                         elif result_type == 'already_downloaded':
                             output_filename = result
                             xbmc.log(f"yt-dlp_to_kodi: already downloaded file => {output_filename}", level=xbmc.LOGINFO)
