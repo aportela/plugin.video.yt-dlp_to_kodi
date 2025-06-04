@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 import re
 
+from resources.lib.nfo_generator import generate_nfo
+
 EXAMPLE_VIDEO_YOUTUBE_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 EXAMPLE_VIDEO_TWITCH_URL = "https://www.twitch.tv/videos/799499623"
 
@@ -196,6 +198,15 @@ def download_to_cache(cache_path, url):
 
             if yt_dlp_proc.returncode == 0:
                 xbmc.log(f"yt-dlp_to_kodi: download success", level=xbmc.LOGDEBUG)
+
+                if ADDON.getSetting('save_nfo') == "true":
+                    xbmc.log(f"yt-dlp_to_kodi: json: {output_json_metadata}", level=xbmc.LOGERROR)
+                    if os.path.exists(output_json_metadata):
+                        output_directory = os.path.dirname(output_filename)
+                        output_base_name = os.path.splitext(os.path.basename(output_filename))[0]
+                        output_nfo_path = os.path.join(output_directory, output_base_name + '.nfo')
+                        generate_nfo(output_json_metadata, output_nfo_path)
+                        os.remove(output_json_metadata)
 
                 xbmc.executebuiltin('Notification("yt-dlp to kodi", "Video has been downloaded, started playing...", 3000)')
 
