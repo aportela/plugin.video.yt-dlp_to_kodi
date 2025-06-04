@@ -62,6 +62,7 @@ def list_directory(path):
             url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(full_path)}"
             xbmcplugin.addDirectoryItem(handle, url, li, isFolder=True)
         else:
+            # TODO: only if use NFO metadata
             video_exts = ['.mp4', '.mkv', '.avi', '.webm']
             ext = os.path.splitext(full_path)[1].lower()
             if ext in video_exts:
@@ -85,6 +86,7 @@ def list_directory(path):
                 fanart = None
                 thumb = None
                 base_name = os.path.splitext(full_path)[0]
+                # TODO: use metadata urls if local image not found
                 for img_ext in ['.jpg', '.png']:
                     img_path = os.path.join(path, base_name + img_ext)
                     if os.path.exists(img_path):
