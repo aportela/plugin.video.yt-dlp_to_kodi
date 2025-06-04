@@ -147,7 +147,8 @@ def download_to_cache(cache_path, url):
 
                 output_line = output.strip()
 
-                #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
+                if ADDON.getSetting('debug') == "true":
+                    xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGDEBUG)
 
                 patterns = [
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
