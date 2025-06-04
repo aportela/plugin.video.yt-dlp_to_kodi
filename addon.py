@@ -90,12 +90,14 @@ def download_to_cache(cache_path, url):
                 '--no-color',
                 '--progress',
                 '-f', f'bestvideo[height<=?{COMMAND_LINE_MAX_VIDEO_HEIGHT}]+bestaudio/best',
-                '--force-overwrite', # TODO: use settings
                 '--restrict-filenames',
                 '-o', COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE,
                 # TODO: write thumbnail & generate NFO
                 url
             ]
+
+            if ADDON.getSetting('force_overwrite') == "true":
+                commandline.insert(6, '--force-overwrite')
 
             xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
 
@@ -133,14 +135,18 @@ def download_to_cache(cache_path, url):
                             output_filename = os.path.abspath(match.group(1).strip())
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
                         else:
-                            # required for twitch streams
-                            match = re.search(r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', output_line)
+                            # required for already downloaded files
+                            match = re.search(r'\[download\] (.*) has already been downloaded$', output_line)
                             if match:
                                 output_filename = os.path.abspath(match.group(1).strip())
                                 xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
-
+                            else:
+                                # required for twitch streams
+                                match = re.search(r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', output_line)
+                                if match:
+                                    output_filename = os.path.abspath(match.group(1).strip())
+                                    xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
                     #xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
-
                 xbmc.sleep(100)
 
             for error_linea in yt_dlp_proc.stderr:
