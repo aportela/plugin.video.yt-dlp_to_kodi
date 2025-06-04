@@ -79,10 +79,11 @@ def download_to_cache(cache_path, url):
 
         def ytdlp_download_to_cache():
             xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
-            COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}{"" if cache_path.endswith(os.sep) else os.sep }%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
+            COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}{"" if cache_path.endswith(os.sep) else os.sep }%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(upload_date)s - %(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
             COMMAND_LINE_MAX_VIDEO_HEIGHT=int(ADDON.getSetting('max_resolution')) or 1080
 
             output_filename = ""
+            output_thumbnail = ""
 
             commandline = [
                 'yt-dlp',
@@ -99,6 +100,11 @@ def download_to_cache(cache_path, url):
 
             if ADDON.getSetting('force_overwrite') == "true":
                 commandline.insert((len(commandline) - 1), '--force-overwrite')
+
+            if True or ADDON.getSetting('save_thumbnail') == "true":
+                commandline.insert((len(commandline) - 1), '--write-thumbnail')
+                commandline.insert((len(commandline) - 1), '--convert-thumbnails')
+                commandline.insert((len(commandline) - 1), 'jpg')
 
             xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
 
@@ -125,6 +131,7 @@ def download_to_cache(cache_path, url):
                 patterns = [
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
                     (r'\[Merger\] Merging formats into "(.*)"$', lambda match: ('merger', os.path.abspath(match.group(1).strip()))),
+                    (r'\[info\] Writing video thumbnail \d+ to: "(.*)"$', lambda match: ('thumbnail_path', os.path.abspath(match.group(1).strip()))),
                     (r'\[download\] (.*) has already been downloaded$', lambda match: ('already_downloaded', os.path.abspath(match.group(1).strip()))),
                     (r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', lambda match: ('fixup', os.path.abspath(match.group(1).strip()))),
                     (r'Error: (.*)$', lambda match: ('error', match.group(1)))
@@ -140,6 +147,9 @@ def download_to_cache(cache_path, url):
                         elif result_type == 'merger':
                             output_filename = result
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
+                        elif result_type == 'thumbnail_path':
+                            output_thumbnail = result
+                            xbmc.log(f"yt-dlp_to_kodi: output thumbnail => {output_thumbnail}", level=xbmc.LOGINFO)
                         elif result_type == 'already_downloaded':
                             output_filename = result
                             xbmc.log(f"yt-dlp_to_kodi: already downloaded file => {output_filename}", level=xbmc.LOGINFO)
