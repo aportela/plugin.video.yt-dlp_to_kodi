@@ -102,6 +102,17 @@ def list_directory(path):
                     'mediatype': 'movie'
                 }
                 li.setInfo('video', info_labels)
+                """
+                video_info = {
+                    'codec': 'h264',
+                    'aspect': 1.78,
+                    'width': 1280,
+                    'height': 720,
+                }
+                li.addStreamInfo('video', video_info)
+                li.addStreamInfo('audio', {'codec': 'dts', 'language': 'en', 'channels': 2})
+                li.addStreamInfo('subtitle', {'language': 'en'})
+                """
                 url = f"{plugin_url}?action=play_cache_item&path={urllib.parse.quote_plus(full_path)}"
                 xbmcplugin.addDirectoryItem(handle, url, li, isFolder=False)
 
@@ -125,6 +136,7 @@ def download_to_cache(cache_path, url):
             output_filename = ""
             output_thumbnail = ""
             output_json_metadata = ""
+            unsupported_url = False
 
             # TODO:
             # MARKETS/CHAPTERS --parse-chapters --merge-output-format mkv
@@ -195,7 +207,6 @@ def download_to_cache(cache_path, url):
                 if isinstance(output, bytes):
                     output = output.decode('utf-8')
 
-
                 output_line = output.strip()
 
                 if ADDON.getSetting('debug') == "true":
@@ -208,7 +219,6 @@ def download_to_cache(cache_path, url):
                     (r'Writing video metadata as JSON to: (.*)$', lambda match: ('json_metadata_path', os.path.abspath(match.group(1).strip()))),
                     (r'\[download\] (.*) has already been downloaded$', lambda match: ('already_downloaded', os.path.abspath(match.group(1).strip()))),
                     (r'\[FixupM3u8\] Fixing MPEG-TS in MP4 container of "(.*)"$', lambda match: ('fixup', os.path.abspath(match.group(1).strip()))),
-                    (r'Error: (.*)$', lambda match: ('error', match.group(1)))
                 ]
 
                 for pattern, action in patterns:
@@ -233,13 +243,22 @@ def download_to_cache(cache_path, url):
                         elif result_type == 'fixup':
                             output_filename = result
                             xbmc.log(f"yt-dlp_to_kodi: fixup file => {output_filename}", level=xbmc.LOGINFO)
-                        elif result_type == 'error':
-                            xbmc.log(f"yt-dlp_to_kodi: error occurred: {result}", level=xbmc.LOGERROR)
                         break
                 xbmc.sleep(100)
 
-            for error_linea in yt_dlp_proc.stderr:
-                xbmc.log(f"yt-dlp_to_kodi: {error_linea}", level=xbmc.LOGERROR)
+            error_patterns = [
+                (r'Error: (.*)$', lambda match: ('error', match.group(1)))
+            ]
+
+            for error_line in yt_dlp_proc.stderr:
+                unsupported_url = True
+                xbmc.log(f"yt-dlp_to_kodi: {error_line}", level=xbmc.LOGERROR)
+                for pattern, action in error_patterns:
+                    match = re.search(pattern, error_line)
+                    if match:
+                        result_type, result = action(match)
+                        if result_type == 'unsupported_url':
+                            unsupported_url = True
 
             yt_dlp_proc.communicate()
 
@@ -270,7 +289,10 @@ def download_to_cache(cache_path, url):
                     xbmc.executebuiltin('Notification("Error", "Downloaded file not found", 3000)')
             else:
                 xbmc.log(f"yt-dlp_to_kodi: download error", level=xbmc.LOGINFO)
-                xbmc.executebuiltin('Notification("Download error", "Error while downloading file", 3000)')
+                if unsupported_url is True:
+                    xbmc.executebuiltin('Notification("Download error", "Unsupported URL", 3000)')
+                else:
+                    xbmc.executebuiltin('Notification("Download error", "Error while downloading file", 3000)')
 
         descarga_thread = threading.Thread(target=ytdlp_download_to_cache)
         descarga_thread.start()
