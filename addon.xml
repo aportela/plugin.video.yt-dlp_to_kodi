@@ -10,8 +10,10 @@
         <library path="resources/lib"/>
     </resources>
     <extension point="xbmc.addon.metadata">
-        <summary lang="en">Download streams for multiple sites and watch on kodi</summary>
-        <description lang="en">Download streams for multiple sites and watch on kodi</description>
+        <summary lang="en_GB">yt-dlp to kodi</summary>
+        <summary lang="es_ES">yt-dlp to kodi</summary>
+        <description lang="en_GB">Download streams for multiple sites and watch on kodi</description>
+        <description lang="es_ES">Descarga streams de múltiples sitios y visualizalos en kodi</description>
         <language>en</language>
         <platform>all</platform>
         <website>https://github.com/aportela/plugin.video.yt-dlp_to_kodi</website>
