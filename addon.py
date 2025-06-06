@@ -300,15 +300,16 @@ def download_to_cache(cache_path, url):
 def show_addon_menu():
     cache_path = get_cache_path()
     xbmc.log(f"yt-dlp_to_kodi: cache_path: {cache_path}", level=xbmc.LOGDEBUG)
-    item = xbmcgui.ListItem(label='Cached videos')
+    item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30001))
     url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(cache_path)}"
     xbmcplugin.addDirectoryItem(handle, url, item, isFolder=True)
-    item = xbmcgui.ListItem(label='Settings')
+    #item = xbmcgui.ListItem(label='Settings')
+    item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30002))
     url = f"{plugin_url}?action=open_settings"
     xbmcplugin.addDirectoryItem(handle, url, item, isFolder=False)
     debug = ADDON.getSetting('debug')
     if debug == 'true':
-        item = xbmcgui.ListItem(label='Debug tests')
+        item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30003))
         url = f"{plugin_url}?action=show_debug_tests_submenu"
         xbmcplugin.addDirectoryItem(handle, url, item, isFolder=True)
     xbmcplugin.endOfDirectory(handle)
