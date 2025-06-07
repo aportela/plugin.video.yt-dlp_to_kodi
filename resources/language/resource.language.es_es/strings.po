@@ -21,3 +21,51 @@ msgstr "Ajustes"
 msgctxt "#30003"
 msgid "Debug tests"
 msgstr "Tests de depuración"
+
+msgctxt "#30051"
+msgid "General"
+msgstr "General"
+
+msgctxt "#30052"
+msgid "Storage path"
+msgstr "Ruta de almacenamiento"
+
+msgctxt "#30053"
+msgid "Show notifications"
+msgstr "Mostrar notificaciones"
+
+msgctxt "#30061"
+msgid "Metadata"
+msgstr "Metadatos"
+
+msgctxt "#30062"
+msgid "Save subtitles"
+msgstr "Guardar subtítulos"
+
+msgctxt "#30063"
+msgid "Save NFO"
+msgstr "Guardar NFO"
+
+msgctxt "#30064"
+msgid "Save thumbnail"
+msgstr "Guardar miniatura"
+
+msgctxt "#30071"
+msgid "yt-dlp options"
+msgstr "Opciones yt-dlp"
+
+msgctxt "#30072"
+msgid "Max resolution"
+msgstr "Máxima resolución"
+
+msgctxt "#30073"
+msgid "Force overwrite existing files"
+msgstr "Sobreescribir archivos existentes"
+
+msgctxt "#30081"
+msgid "Debug"
+msgstr "Depuración"
+
+msgctxt "#30082"
+msgid "Enable debug"
+msgstr "Activar depuración"

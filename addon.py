@@ -22,7 +22,7 @@ args = urllib.parse.parse_qs(sys.argv[2][1:])
 ADDON = xbmcaddon.Addon()
 
 def get_cache_path():
-    SETTINGS_ROOT_PATH = ADDON.getSetting('data_path')
+    SETTINGS_ROOT_PATH = ADDON.getSetting('storage_path')
     ROOT_PATH = None
     if SETTINGS_ROOT_PATH is not None and os.path.exists(SETTINGS_ROOT_PATH):
         CACHE_BASE_PATH = str(Path(SETTINGS_ROOT_PATH))

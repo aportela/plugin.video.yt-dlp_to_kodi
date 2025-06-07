@@ -10,7 +10,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-
 msgctxt "#30001"
 msgid "Cached videos"
 msgstr "Cached videos"
@@ -22,3 +21,51 @@ msgstr "Settings"
 msgctxt "#30003"
 msgid "Debug tests"
 msgstr "Debug tests"
+
+msgctxt "#30051"
+msgid "General"
+msgstr "General"
+
+msgctxt "#30052"
+msgid "Storage path"
+msgstr "Storage path"
+
+msgctxt "#30053"
+msgid "Show notifications"
+msgstr "Show notifications"
+
+msgctxt "#30061"
+msgid "Metadata"
+msgstr "Metadata"
+
+msgctxt "#30062"
+msgid "Save subtitles"
+msgstr "Save subtitles"
+
+msgctxt "#30063"
+msgid "Save NFO"
+msgstr "Save NFO"
+
+msgctxt "#30064"
+msgid "Save thumbnail"
+msgstr "Save thumbnail"
+
+msgctxt "#30071"
+msgid "yt-dlp options"
+msgstr "yt-dlp options"
+
+msgctxt "#30072"
+msgid "Max resolution"
+msgstr "Max resolution"
+
+msgctxt "#30073"
+msgid "Force overwrite existing files"
+msgstr "Force overwrite existing files"
+
+msgctxt "#30081"
+msgid "Debug"
+msgstr "Debug"
+
+msgctxt "#30082"
+msgid "Enable debug"
+msgstr "Enable debug"
