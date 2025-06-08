@@ -22,6 +22,30 @@ msgctxt "#30003"
 msgid "Debug tests"
 msgstr "Tests de depuración"
 
+msgctxt "#30021"
+msgid "Path not found"
+msgstr "La ruta no existe"
+
+msgctxt "#30022"
+msgid "Video has been downloaded, started playing..."
+msgstr "El video se ha descargado, comenzando reproducción..."
+
+msgctxt "#30023"
+msgid "Downloaded file not found"
+msgstr "El fichero descargado no existe"
+
+msgctxt "#30024"
+msgid "Unsupported URL"
+msgstr "Sitio no soportado"
+
+msgctxt "#30025"
+msgid "Error while downloading file"
+msgstr "Error al descargar el fichero"
+
+msgctxt "#30026"
+msgid "File not found"
+msgstr "El fichero no existe"
+
 msgctxt "#30051"
 msgid "General"
 msgstr "General"
@@ -33,6 +57,10 @@ msgstr "Ruta de almacenamiento"
 msgctxt "#30053"
 msgid "Show notifications"
 msgstr "Mostrar notificaciones"
+
+msgctxt "#30054"
+msgid "Notification timeout (seconds)"
+msgstr "Tiempo (en segundos) de la notificación"
 
 msgctxt "#30061"
 msgid "Metadata"

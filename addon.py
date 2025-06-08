@@ -21,6 +21,8 @@ handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
 ADDON = xbmcaddon.Addon()
 
+DEFAULT_NOTIFICATION_MILLISECONDS = ADDON.getSetting('default_notification_seconds') * 1000 or 3000
+
 def get_cache_path():
     SETTINGS_ROOT_PATH = ADDON.getSetting('storage_path')
     ROOT_PATH = None
@@ -46,13 +48,10 @@ xbmc.LOGERROR
 xbmc.LOGFATAL
 """
 
-# notification example
-#xbmcgui.Dialog().notification("yt-dlp_to_kodi", "Starting...", xbmcgui.NOTIFICATION_INFO, 500)
-
 def list_directory(path):
     if not os.path.exists(path):
         xbmc.log(f"yt-dlp_to_kodi: list_directory() -> path not found: {path}", level=xbmc.LOGERROR)
-        xbmcgui.Dialog().notification("yt-dlp_to_kodi", f"Path not found: {path}", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30021)}: {path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
         xbmcplugin.endOfDirectory(handle)
         return
     for entry in os.listdir(path):
@@ -122,7 +121,7 @@ def download_to_cache(cache_path, url):
 
     if not os.path.exists(cache_path):
         xbmc.log(f"yt-dlp_to_kodi: download_to_cache() -> path not found: {cache_path}", level=xbmc.LOGERROR)
-        xbmcgui.Dialog().notification("yt-dlp_to_kodi", f"Path not found: {cache_path}", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30021)}: {cache_path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
         return
     else:
         dialog = xbmcgui.DialogProgress()
@@ -276,7 +275,7 @@ def download_to_cache(cache_path, url):
                         generate_nfo(output_json_metadata, output_nfo_path)
                         os.remove(output_json_metadata)
 
-                xbmc.executebuiltin('Notification("yt-dlp to kodi", "Video has been downloaded, started playing...", 3000)')
+                xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30022), icon = xbmcgui.NOTIFICATION_INFO, time = DEFAULT_NOTIFICATION_MILLISECONDS)
 
                 if os.path.exists(output_filename):
                     file = output_filename.replace('\\', '/') # REQUIRED ?
@@ -286,13 +285,13 @@ def download_to_cache(cache_path, url):
                     player.play(file)
                 else:
                     xbmc.log(f"yt-dlp_to_kodi: file not found {output_filename}", level=xbmc.LOGERROR)
-                    xbmc.executebuiltin('Notification("Error", "Downloaded file not found", 3000)')
+                    xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30023), icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
             else:
                 xbmc.log(f"yt-dlp_to_kodi: download error", level=xbmc.LOGINFO)
                 if unsupported_url is True:
-                    xbmc.executebuiltin('Notification("Download error", "Unsupported URL", 3000)')
+                    xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30024), icon = xbmcgui.NOTIFICATION_WARNING, time = DEFAULT_NOTIFICATION_MILLISECONDS)
                 else:
-                    xbmc.executebuiltin('Notification("Download error", "Error while downloading file", 3000)')
+                    xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30025), icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
 
         descarga_thread = threading.Thread(target=ytdlp_download_to_cache)
         descarga_thread.start()
@@ -352,7 +351,7 @@ def main():
                 player.play(path)
             else:
                 xbmc.log(f"yt-dlp: file not found: {path}", level=xbmc.LOGERROR)
-                xbmcgui.Dialog().notification("yt-dlp_to_kodi", f"file not found: {path}", xbmcgui.NOTIFICATION_ERROR)
+                xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30026)}: {path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
                 return
     else:
         show_addon_menu()
