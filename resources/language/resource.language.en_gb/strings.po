@@ -54,6 +54,14 @@ msgctxt "#30027"
 msgid "Cache has been cleared"
 msgstr "Cache has been cleared"
 
+msgctxt "#30028"
+msgid "Processing url"
+msgstr "Processing url"
+
+msgctxt "#30029"
+msgid "Download progress"
+msgstr "Download progress"
+
 msgctxt "#30051"
 msgid "General"
 msgstr "General"

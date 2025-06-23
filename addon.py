@@ -123,7 +123,7 @@ def download_to_cache(cache_path, url):
         return
     else:
         dialog = xbmcgui.DialogProgress()
-        dialog.create("yt-dlp to kodi", f"Processing url: {url}")
+        dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}: {url}")
 
         def ytdlp_download_to_cache():
             xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
@@ -224,7 +224,7 @@ def download_to_cache(cache_path, url):
                         result_type, result = action(match)
                         if result_type == 'percent':
                             percent = result
-                            dialog.update(int(percent), f"Download progress: {percent:.2f}%")
+                            dialog.update(int(percent), f"{ADDON.getLocalizedString(30029)}: {percent:.2f}%")
                         elif result_type == 'merger':
                             output_filename = result
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)

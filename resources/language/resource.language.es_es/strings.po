@@ -54,6 +54,14 @@ msgctxt "#30027"
 msgid "File not found"
 msgstr "El fichero no existe"
 
+msgctxt "#30028"
+msgid "Processing url"
+msgstr "Procesando url"
+
+msgctxt "#30029"
+msgid "Download progress"
+msgstr "Progreso de la descarga"
+
 msgctxt "#30051"
 msgid "General"
 msgstr "General"
