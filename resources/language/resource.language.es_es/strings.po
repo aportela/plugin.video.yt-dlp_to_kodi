@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: yt-dlp to kodi 0.10\n"
+"Project-Id-Version: yt-dlp to kodi 0.11\n"
 "POT-Creation-Date: 2025-06-05 00:00+0000\n"
 "PO-Revision-Date: 2025-06-05 00:00+0000\n"
 "Last-Translator: Alejandro Portela <766f6964+github@gmail.com>\n"
