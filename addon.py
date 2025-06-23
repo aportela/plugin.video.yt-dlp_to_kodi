@@ -21,17 +21,15 @@ handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
 ADDON = xbmcaddon.Addon()
 
-DEFAULT_NOTIFICATION_MILLISECONDS = ADDON.getSetting('default_notification_seconds') * 1000 or 3000
+DEFAULT_NOTIFICATION_MILLISECONDS = int(ADDON.getSetting('default_notification_seconds')) * 1000 or 3000
 
 def get_cache_path():
     SETTINGS_ROOT_PATH = ADDON.getSetting('storage_path')
     ROOT_PATH = None
     if SETTINGS_ROOT_PATH is not None and os.path.exists(SETTINGS_ROOT_PATH):
         CACHE_BASE_PATH = str(Path(SETTINGS_ROOT_PATH))
-
     else:
         CACHE_BASE_PATH = str(Path(tempfile.gettempdir()))
-
 
     path = Path(CACHE_BASE_PATH, "yt-dlp_to_kodi/cache/")
     path.mkdir(parents=True, exist_ok=True)
@@ -39,14 +37,14 @@ def get_cache_path():
     CACHE_BASE_PATH = str(path)
     return CACHE_BASE_PATH
 
-# available log levels
-"""
-xbmc.LOGDEBUG
-xbmc.LOGINFO
-xbmc.LOGWARNING
-xbmc.LOGERROR
-xbmc.LOGFATAL
-"""
+def rm_dir(directory_path):
+    for name in os.listdir(directory_path):
+        path = os.path.join(directory_path, name)
+        if os.path.isfile(path) or os.path.islink(path):
+            os.remove(path)
+        elif os.path.isdir(path):
+            rm_dir(path)
+            os.rmdir(path)
 
 def list_directory(path):
     if not os.path.exists(path):
@@ -302,9 +300,11 @@ def show_addon_menu():
     item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30001))
     url = f"{plugin_url}?action=browse_cache&path={urllib.parse.quote_plus(cache_path)}"
     xbmcplugin.addDirectoryItem(handle, url, item, isFolder=True)
-    #item = xbmcgui.ListItem(label='Settings')
     item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30002))
     url = f"{plugin_url}?action=open_settings"
+    xbmcplugin.addDirectoryItem(handle, url, item, isFolder=False)
+    item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30004))
+    url = f"{plugin_url}?action=clear_cache"
     xbmcplugin.addDirectoryItem(handle, url, item, isFolder=False)
     debug = ADDON.getSetting('debug')
     if debug == 'true':
@@ -332,10 +332,18 @@ def main():
             url = args['url'][0]
             xbmc.log(f"yt-dlp_to_kodi: processing url {url}", level=xbmc.LOGDEBUG)
             cache_path = get_cache_path()
+            if ADDON.getSetting('auto_clear_cache') == "true":
+                rm_dir(cache_path)
             download_to_cache(cache_path, url)
         elif args['action'][0] == 'open_settings':
             xbmc.log(f"yt-dlp_to_kodi: opening settings", level=xbmc.LOGDEBUG)
             xbmc.executebuiltin(f"Addon.OpenSettings({xbmcaddon.Addon().getAddonInfo('id')})")
+            return
+        elif args['action'][0] == 'clear_cache':
+            xbmc.log(f"yt-dlp_to_kodi: clearing cache", level=xbmc.LOGDEBUG)
+            cache_path = get_cache_path()
+            rm_dir(cache_path)
+            xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30027), icon = xbmcgui.NOTIFICATION_INFO, time = DEFAULT_NOTIFICATION_MILLISECONDS)
             return
         elif args['action'][0] == 'browse_cache' and 'path' in args:
             path = args['path'][0]

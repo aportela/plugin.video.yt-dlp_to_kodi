@@ -22,6 +22,10 @@ msgctxt "#30003"
 msgid "Debug tests"
 msgstr "Tests de depuración"
 
+msgctxt "#30004"
+msgid "Clear cache"
+msgstr "Borrar caché"
+
 msgctxt "#30021"
 msgid "Path not found"
 msgstr "La ruta no existe"
@@ -43,6 +47,10 @@ msgid "Error while downloading file"
 msgstr "Error al descargar el fichero"
 
 msgctxt "#30026"
+msgid "Cache has been cleared"
+msgstr "La caché ha sido eliminada"
+
+msgctxt "#30027"
 msgid "File not found"
 msgstr "El fichero no existe"
 
@@ -89,6 +97,10 @@ msgstr "Máxima resolución"
 msgctxt "#30073"
 msgid "Force overwrite existing files"
 msgstr "Sobreescribir archivos existentes"
+
+msgctxt "#30074"
+msgid "Auto clear cache"
+msgstr "Borrar caché automáticamente"
 
 msgctxt "#30081"
 msgid "Debug"

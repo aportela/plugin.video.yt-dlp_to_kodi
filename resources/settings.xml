@@ -12,6 +12,7 @@
     <category label="30071">
         <setting id="max_resolution" type="select" label="30072" default="1080" values="4320|2160|1440|1080|720|480|360|240|144" />
         <setting id="force_overwrite" type="bool" label="30073" default="false" />
+        <setting id="auto_clear_cache" type="bool" label="30074" default="false" />
     </category>
     <category label="30081">
         <setting id="debug" type="bool" label="30082" default="false" />
