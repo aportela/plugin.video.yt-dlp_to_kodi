@@ -153,6 +153,8 @@ def download_to_cache(cache_path, url):
                 '--restrict-filenames',
                 # Force filenames to be Windows-compatible
                 '--windows-filenames',
+                # Download only the video, if the URL refers to a video and a playlist
+                '--no-playlist',
                 # Resume partially downloaded files/fragments (default)
                 '--continue',
                 # Output filename template; see "OUTPUT TEMPLATE" for details
