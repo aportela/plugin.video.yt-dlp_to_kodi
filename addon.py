@@ -38,19 +38,21 @@ def get_cache_path():
     return CACHE_BASE_PATH
 
 def rm_dir(directory_path):
-    for name in os.listdir(directory_path):
-        path = os.path.join(directory_path, name)
-        if os.path.isfile(path) or os.path.islink(path):
-            os.remove(path)
-        elif os.path.isdir(path):
-            rm_dir(path)
-            os.rmdir(path)
+    try:
+        for name in os.listdir(directory_path):
+            path = os.path.join(directory_path, name)
+            if os.path.isfile(path) or os.path.islink(path):
+                os.remove(path)
+            elif os.path.isdir(path):
+                rm_dir(path)
+                os.rmdir(path)
+    except Exception as e:
+        xbmc.log(f"yt-dlp_to_kodi: rm_dir error: {e}", level=xbmc.LOGERROR)
 
 def list_directory(path):
     if not os.path.exists(path):
         xbmc.log(f"yt-dlp_to_kodi: list_directory() -> path not found: {path}", level=xbmc.LOGERROR)
         xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30021)}: {path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
-        xbmcplugin.endOfDirectory(handle)
         return
     for entry in os.listdir(path):
         full_path = os.path.join(path, entry)
@@ -66,7 +68,7 @@ def list_directory(path):
                 base_name = os.path.splitext(full_path)[0]
                 nfo_path = os.path.join(path, base_name + '.nfo')
 
-                title = full_path
+                title = entry
                 year = ''
                 plot = ''
 
@@ -115,10 +117,10 @@ def list_directory(path):
 
     xbmcplugin.endOfDirectory(handle)
 
-def download_to_cache(cache_path, url):
+def process_url(cache_path, url, append_to_playlist):
 
     if not os.path.exists(cache_path):
-        xbmc.log(f"yt-dlp_to_kodi: download_to_cache() -> path not found: {cache_path}", level=xbmc.LOGERROR)
+        xbmc.log(f"yt-dlp_to_kodi: process_url() -> path not found: {cache_path}", level=xbmc.LOGERROR)
         xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30021)}: {cache_path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
         return
     else:
@@ -126,7 +128,7 @@ def download_to_cache(cache_path, url):
         dialog = xbmcgui.DialogProgress()
         dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}: {url}")
 
-        def ytdlp_download_to_cache():
+        def ytdlp_download_to_cache_and_process():
             xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
             COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}{"" if cache_path.endswith(os.sep) else os.sep }%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(upload_date)s - %(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
             COMMAND_LINE_MAX_VIDEO_HEIGHT=int(ADDON.getSetting('max_resolution')) or 1080
@@ -262,7 +264,7 @@ def download_to_cache(cache_path, url):
 
             yt_dlp_proc.communicate()
 
-            dialog.close()
+            #dialog.close()
 
             if yt_dlp_proc.returncode == 0:
                 xbmc.log(f"yt-dlp_to_kodi: download success", level=xbmc.LOGDEBUG)
@@ -282,11 +284,12 @@ def download_to_cache(cache_path, url):
                     file = output_filename.replace('\\', '/') # REQUIRED ?
                     xbmc.log(f"yt-dlp: playing: {file}", level=xbmc.LOGINFO)
                     player = xbmc.Player()
-                    if player.isPlaying() and ADDON.getSetting('auto_enqueue_into_playlist_if_already_playing') == "true":
+                    if append_to_playlist:
                         playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
                         playlist.add(file)
+                        if not player.isPlaying():
+                            player.play(playlist)
                     else:
-                        # TODO play using play_cache_item
                         player.play(file)
                 else:
                     xbmc.log(f"yt-dlp_to_kodi: file not found {output_filename}", level=xbmc.LOGERROR)
@@ -298,7 +301,7 @@ def download_to_cache(cache_path, url):
                 else:
                     xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30025), icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
 
-        descarga_thread = threading.Thread(target=ytdlp_download_to_cache)
+        descarga_thread = threading.Thread(target=ytdlp_download_to_cache_and_process)
         descarga_thread.start()
 
 def show_addon_menu():
@@ -335,13 +338,15 @@ def show_addon_debug_tests_submenu():
 
 def main():
     if 'action' in args:
-        if args['action'][0] == 'process' and 'url' in args:
+        play = args['action'][0] == 'play'
+        append = args['action'][0] == 'append'
+        if (play or append) and 'url' in args:
             url = args['url'][0]
             xbmc.log(f"yt-dlp_to_kodi: processing url {url}", level=xbmc.LOGDEBUG)
             cache_path = get_cache_path()
             if ADDON.getSetting('auto_clear_cache') == "true":
                 rm_dir(cache_path)
-            download_to_cache(cache_path, url)
+            process_url(cache_path, url, append)
         elif args['action'][0] == 'open_settings':
             xbmc.log(f"yt-dlp_to_kodi: opening settings", level=xbmc.LOGDEBUG)
             xbmc.executebuiltin(f"Addon.OpenSettings({xbmcaddon.Addon().getAddonInfo('id')})")

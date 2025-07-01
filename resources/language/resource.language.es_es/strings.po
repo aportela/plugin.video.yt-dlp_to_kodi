@@ -110,10 +110,6 @@ msgctxt "#30074"
 msgid "Auto clear cache"
 msgstr "Borrar caché automáticamente"
 
-msgctxt "#30055"
-msgid "Auto enqueue into playlist if already playing"
-msgstr "Encolar automáticamente en una lista si estamos reproduciendo"
-
 msgctxt "#30081"
 msgid "Debug"
 msgstr "Depuración"
