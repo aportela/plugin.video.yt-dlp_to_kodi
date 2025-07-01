@@ -110,6 +110,10 @@ msgctxt "#30074"
 msgid "Auto clear cache"
 msgstr "Auto clear cache"
 
+msgctxt "#30055"
+msgid "Auto enqueue into playlist if already playing"
+msgstr "Auto enqueue into playlist if already playing"
+
 msgctxt "#30081"
 msgid "Debug"
 msgstr "Debug"

@@ -122,6 +122,7 @@ def download_to_cache(cache_path, url):
         xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30021)}: {cache_path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
         return
     else:
+
         dialog = xbmcgui.DialogProgress()
         dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}: {url}")
 
@@ -280,9 +281,13 @@ def download_to_cache(cache_path, url):
                 if os.path.exists(output_filename):
                     file = output_filename.replace('\\', '/') # REQUIRED ?
                     xbmc.log(f"yt-dlp: playing: {file}", level=xbmc.LOGINFO)
-                    # TODO play using play_cache_item
                     player = xbmc.Player()
-                    player.play(file)
+                    if player.isPlaying() and ADDON.getSetting('auto_enqueue_into_playlist_if_already_playing') == "true":
+                        playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+                        playlist.add(file)
+                    else:
+                        # TODO play using play_cache_item
+                        player.play(file)
                 else:
                     xbmc.log(f"yt-dlp_to_kodi: file not found {output_filename}", level=xbmc.LOGERROR)
                     xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30023), icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)

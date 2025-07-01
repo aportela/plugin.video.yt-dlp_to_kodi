@@ -1,6 +1,7 @@
 <settings>
     <category label="30051">
         <setting id="storage_path" type="folder" label="30052" source="auto" option="false" />
+        <setting id="auto_enqueue_into_playlist_if_already_playing" type="bool" label="30055" default="true" />
         <setting id="show_notifications" type="bool" label="30053" default="true" />
         <setting id="default_notification_seconds" type="select" label="30054" default="3" values="5|4|3|2|1" />
     </category>
