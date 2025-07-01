@@ -21,7 +21,11 @@ handle = int(sys.argv[1])
 args = urllib.parse.parse_qs(sys.argv[2][1:])
 ADDON = xbmcaddon.Addon()
 
+SHOW_DIALOG = False
+
 DEFAULT_NOTIFICATION_MILLISECONDS = int(ADDON.getSetting('default_notification_seconds')) * 1000 or 3000
+
+done = threading.Event()
 
 def get_cache_path():
     SETTINGS_ROOT_PATH = ADDON.getSetting('storage_path')
@@ -125,8 +129,9 @@ def process_url(cache_path, url, append_to_playlist):
         return
     else:
 
-        dialog = xbmcgui.DialogProgress()
-        dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}: {url}")
+        if SHOW_DIALOG:
+            dialog = xbmcgui.DialogProgress()
+            dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}: {url}")
 
         def ytdlp_download_to_cache_and_process():
             xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
@@ -229,7 +234,8 @@ def process_url(cache_path, url, append_to_playlist):
                         result_type, result = action(match)
                         if result_type == 'percent':
                             percent = result
-                            dialog.update(int(percent), f"{ADDON.getLocalizedString(30029)}: {percent:.2f}%")
+                            if SHOW_DIALOG:
+                                dialog.update(int(percent), f"{ADDON.getLocalizedString(30029)}: {percent:.2f}%")
                         elif result_type == 'merger':
                             output_filename = result
                             xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
@@ -264,7 +270,8 @@ def process_url(cache_path, url, append_to_playlist):
 
             yt_dlp_proc.communicate()
 
-            #dialog.close()
+            if SHOW_DIALOG:
+                dialog.close()
 
             if yt_dlp_proc.returncode == 0:
                 xbmc.log(f"yt-dlp_to_kodi: download success", level=xbmc.LOGDEBUG)
@@ -301,8 +308,12 @@ def process_url(cache_path, url, append_to_playlist):
                 else:
                     xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30025), icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
 
-        descarga_thread = threading.Thread(target=ytdlp_download_to_cache_and_process)
-        descarga_thread.start()
+            done.set()
+
+        threading.Thread(target=ytdlp_download_to_cache_and_process, daemon=True).start()
+
+        while not done.is_set():
+            xbmc.sleep(500)
 
 def show_addon_menu():
     cache_path = get_cache_path()
