@@ -9,12 +9,13 @@ import os
 import threading
 import subprocess
 import re
+from urllib.parse import quote_plus
 
 from .const import *
 
 from .nfo_generator import generate_nfo
 
-def process_url(cache_path, url, append_to_playlist):
+def process_url(cache_path, url):
 
     if not os.path.exists(cache_path):
         xbmc.log(f"yt-dlp_to_kodi: process_url() -> path not found: {cache_path}", level=xbmc.LOGERROR)
@@ -113,8 +114,6 @@ def process_url(cache_path, url, append_to_playlist):
                 if ADDON.getSetting('debug') == "true":
                     xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGDEBUG)
 
-                xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGERROR)
-
                 patterns = [
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
                     (r'\[Merger\] Merging formats into "(.*)"$', lambda match: ('merger', os.path.abspath(match.group(1).strip()))),
@@ -187,13 +186,9 @@ def process_url(cache_path, url, append_to_playlist):
                     file = output_filename.replace('\\', '/') # REQUIRED ?
                     xbmc.log(f"yt-dlp: playing: {file}", level=xbmc.LOGINFO)
                     player = xbmc.Player()
-                    if append_to_playlist:
-                        playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-                        playlist.add(file)
-                        if not player.isPlaying():
-                            player.play(playlist)
-                    else:
-                        player.play(file)
+                    player.play(file)
+                    #xbmc.executebuiltin(f'RunPlugin("plugin://{ ADDON_ID }/?action=play_cache_item&path={quote_plus(file)}')
+
                 else:
                     xbmc.log(f"yt-dlp_to_kodi: file not found {output_filename}", level=xbmc.LOGERROR)
                     xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30023), icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)

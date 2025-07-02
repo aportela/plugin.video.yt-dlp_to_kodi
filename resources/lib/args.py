@@ -13,9 +13,7 @@ from .ytdlp_task import process_url, get_ytdlp_version
 
 def process_addon_args():
     if 'action' in ADDON_ARGS:
-        play = ADDON_ARGS['action'][0] == 'play'
-        append = ADDON_ARGS['action'][0] == 'append'
-        if (play or append) and 'url' in ADDON_ARGS:
+        if ADDON_ARGS['action'][0] == 'play' and 'url' in ADDON_ARGS:
             url = ADDON_ARGS['url'][0]
             xmbc_log_debug(f"yt-dlp_to_kodi: processing url {url}")
             if ADDON.getSetting('auto_clear_cache') == "true":
@@ -23,7 +21,7 @@ def process_addon_args():
                     clear_cache_path(CACHE_PATH)
                 except Exception as e:
                     xmbc_log_error(f"yt-dlp_to_kodi: rm_dir error: {e}")
-            process_url(CACHE_PATH, url, append)
+            process_url(CACHE_PATH, url)
 
         elif ADDON_ARGS['action'][0] == 'open_settings':
             xmbc_log_debug(f"yt-dlp_to_kodi: opening settings")
