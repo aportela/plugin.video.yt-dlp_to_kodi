@@ -1,5 +1,7 @@
 # resources/lib/args.py
 
+import xbmc
+
 import os
 
 from .const import ADDON, ADDON_ARGS, CACHE_PATH
