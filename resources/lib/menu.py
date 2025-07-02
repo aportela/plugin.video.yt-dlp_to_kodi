@@ -9,6 +9,7 @@ import os
 from urllib.parse import quote_plus
 
 from .const import CACHE_PATH, ADDON, ADDON_HANDLE, ADDON_PLUGIN_URL, EXAMPLE_VIDEO_YOUTUBE_URL, EXAMPLE_VIDEO_TWITCH_URL
+from .nfo_generator import parse_nfo
 
 def menu_browse_directory(path):
     if not os.path.exists(path):
@@ -19,7 +20,7 @@ def menu_browse_directory(path):
         full_path = os.path.join(path, entry)
         if os.path.isdir(full_path):
             li = xbmcgui.ListItem(label=entry)
-            url = f"{ADDON_PLUGIN_URL}?action=browse_cache&path={urllib.parse.quote_plus(full_path)}"
+            url = f"{ADDON_PLUGIN_URL}?action=browse_cache&path={quote_plus(full_path)}"
             xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=True)
         else:
             # TODO: only if use NFO metadata
@@ -73,7 +74,7 @@ def menu_browse_directory(path):
                 li.addStreamInfo('audio', {'codec': 'dts', 'language': 'en', 'channels': 2})
                 li.addStreamInfo('subtitle', {'language': 'en'})
                 """
-                url = f"{ADDON_PLUGIN_URL}?action=play_cache_item&path={urllib.parse.quote_plus(full_path)}"
+                url = f"{ADDON_PLUGIN_URL}?action=play_cache_item&path={quote_plus(full_path)}"
                 xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=False)
 
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
