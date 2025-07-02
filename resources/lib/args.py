@@ -75,19 +75,6 @@ def process_addon_args():
                 xmbc_notification_error(f"{ADDON.getLocalizedString(30026)}: {path}")
                 return
 
-        elif ADDON_ARGS['action'][0] == 'enqueue_cache_item' and 'path' in ADDON_ARGS:
-            path = ADDON_ARGS['path'][0]
-            if os.path.exists(path):
-                xmbc_log_debug(f"yt-dlp_to_kodi: enqueue file {path}")
-                # TODO
-                #player = xbmc.Player()
-                #player.play(path)
-                return
-            else:
-                xmbc_log_error(f"yt-dlp: file not found: {path}")
-                xmbc_notification_error(f"{ADDON.getLocalizedString(30026)}: {path}")
-                return
-
     else:
         xmbc_log_debug(f"Missing/invalid args => show addon menu")
         menu_browse_main()
