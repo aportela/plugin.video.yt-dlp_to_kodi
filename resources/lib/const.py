@@ -10,6 +10,7 @@ ADDON = xbmcaddon.Addon()
 ADDON_PLUGIN_URL = sys.argv[0]
 ADDON_HANDLE = int(sys.argv[1])
 ADDON_ARGS = parse_qs(sys.argv[2][1:])
+ADDON_ID = ADDON.getAddonInfo("id")
 
 CACHE_PATH = get_cache_path(ADDON.getSetting('storage_path'))
 
