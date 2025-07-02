@@ -10,6 +10,8 @@ import threading
 import subprocess
 import re
 from urllib.parse import quote_plus
+from pathlib import Path
+from tempfile import gettempdir
 
 from .const import *
 
@@ -93,7 +95,7 @@ def process_url(cache_path, url):
 
             xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
 
-            yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True, cwd = cache_path)
+            yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True, cwd = str(Path(gettempdir())))
 
             percent = 0
             output_line = ""
