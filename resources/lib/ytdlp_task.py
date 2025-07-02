@@ -12,6 +12,8 @@ import re
 
 from .const import *
 
+from .nfo_generator import generate_nfo
+
 def process_url(cache_path, url, append_to_playlist):
 
     if not os.path.exists(cache_path):
