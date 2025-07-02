@@ -17,7 +17,10 @@ def process_addon_args():
             url = ADDON_ARGS['url'][0]
             xmbc_log_debug(f"yt-dlp_to_kodi: processing url {url}")
             if ADDON.getSetting('auto_clear_cache') == "true":
-                clear_cache_path(CACHE_PATH)
+                try:
+                    clear_cache_path(CACHE_PATH)
+                except Exception as e:
+                    xmbc_log_error(f"yt-dlp_to_kodi: rm_dir error: {e}")
             process_url(CACHE_PATH, url, append)
 
         elif ADDON_ARGS['action'][0] == 'open_settings':
@@ -27,8 +30,13 @@ def process_addon_args():
 
         elif ADDON_ARGS['action'][0] == 'clear_cache':
             xmbc_log_debug(f"yt-dlp_to_kodi: clearing cache")
-            clear_cache_path(CACHE_PATH)
-            xmbc_notification_info(ADDON.getLocalizedString(30027))
+            try:
+                clear_cache_path(CACHE_PATH)
+                xmbc_notification_info(ADDON.getLocalizedString(30027))
+            except Exception as e:
+                xmbc_log_error(f"yt-dlp_to_kodi: rm_dir error: {e}")
+                xmbc_notification_error(ADDON.getLocalizedString(30030))
+
             return
 
         elif ADDON_ARGS['action'][0] == 'browse_cache' and 'path' in ADDON_ARGS:
@@ -50,6 +58,20 @@ def process_addon_args():
                 xmbc_log_error(f"yt-dlp: file not found: {path}")
                 xmbc_notification_error(f"{ADDON.getLocalizedString(30026)}: {path}")
                 return
+
+        elif ADDON_ARGS['action'][0] == 'enqueue_cache_item' and 'path' in ADDON_ARGS:
+            path = ADDON_ARGS['path'][0]
+            if os.path.exists(path):
+                xmbc_log_debug(f"yt-dlp_to_kodi: enqueue file {path}")
+                # TODO
+                #player = xbmc.Player()
+                #player.play(path)
+                return
+            else:
+                xmbc_log_error(f"yt-dlp: file not found: {path}")
+                xmbc_notification_error(f"{ADDON.getLocalizedString(30026)}: {path}")
+                return
+
     else:
         xmbc_log_debug(f"Missing/invalid args => show addon menu")
         menu_browse_main()
