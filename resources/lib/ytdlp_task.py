@@ -206,3 +206,10 @@ def process_url(cache_path, url, append_to_playlist):
 
 
         threading.Thread(target=ytdlp_download_to_cache_and_process, daemon=True).start()
+
+def get_ytdlp_version():
+    result = subprocess.run(['yt-dlp', '--version'], capture_output=True, text=True)
+    if result is not None:
+        return result.stdout.strip()
+    else:
+        return None

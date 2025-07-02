@@ -9,7 +9,7 @@ from .log import xmbc_log_debug, xmbc_log_error
 from .notification import xmbc_notification_info, xmbc_notification_error
 from .cache import clear_cache_path
 from .menu import menu_browse_directory, menu_browse_tests, menu_browse_main, menu_open_settings
-from .ytdlp_task import process_url
+from .ytdlp_task import process_url, get_ytdlp_version
 
 def process_addon_args():
     if 'action' in ADDON_ARGS:
@@ -38,6 +38,22 @@ def process_addon_args():
             except Exception as e:
                 xmbc_log_error(f"yt-dlp_to_kodi: rm_dir error: {e}")
                 xmbc_notification_error(ADDON.getLocalizedString(30030))
+
+            return
+
+        elif ADDON_ARGS['action'][0] == 'show_ytdlp_version':
+            xmbc_log_debug(f"yt-dlp_to_kodi: show yt-dlp version")
+            try:
+                version = get_ytdlp_version()
+                if version is not None:
+                    xmbc_log_debug(f"yt-dlp_to_kodi: yt-dlp version: {version}")
+                    xmbc_notification_info(version)
+                else:
+                    xmbc_log_error(f"yt-dlp_to_kodi: yt-dlp version error")
+                    xmbc_notification_error(ADDON.getLocalizedString(30031))
+            except Exception as e:
+                xmbc_log_error(f"yt-dlp_to_kodi: yt-dlp version error: {e}")
+                xmbc_notification_error(ADDON.getLocalizedString(30031))
 
             return
 

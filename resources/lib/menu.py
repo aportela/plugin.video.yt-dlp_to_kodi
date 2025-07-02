@@ -91,6 +91,9 @@ def menu_browse_main():
     xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, item, isFolder=False)
     debug = ADDON.getSetting('debug')
     if debug == 'true':
+        item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30005))
+        url = f"{ADDON_PLUGIN_URL}?action=show_ytdlp_version"
+        xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, item, isFolder=True)
         item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30003))
         url = f"{ADDON_PLUGIN_URL}?action=show_debug_tests_submenu"
         xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, item, isFolder=True)
