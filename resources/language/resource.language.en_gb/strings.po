@@ -62,6 +62,10 @@ msgctxt "#30029"
 msgid "Download progress"
 msgstr "Download progress"
 
+msgctxt "#30030"
+msgid "Error clearing cache"
+msgstr "Error clearing cache"
+
 msgctxt "#30051"
 msgid "General"
 msgstr "General"
