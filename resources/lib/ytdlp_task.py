@@ -42,8 +42,7 @@ def process_url(cache_path, url):
             commandline = [
                 'yt-dlp',
                 # Ignore warnings
-                #'--no-warnings',
-                '--verbose',
+                '--no-warnings',
                 # remove ANSI colors
                 '--no-color',
                 # Show progress bar, even if in quiet mode
@@ -94,7 +93,7 @@ def process_url(cache_path, url):
 
             xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
 
-            yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True)
+            yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True, cwd = cache_path)
 
             percent = 0
             output_line = ""
@@ -112,7 +111,7 @@ def process_url(cache_path, url):
                 output_line = output.strip()
 
                 if ADDON.getSetting('debug') == "true":
-                    xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGDEBUG)
+                    xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
 
                 patterns = [
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
