@@ -5,5 +5,8 @@ import xbmc
 def xmbc_log_debug(str):
     xbmc.log(str, level=xbmc.LOGDEBUG)
 
+def xmbc_log_info(str):
+    xbmc.log(str, level=xbmc.LOGINFO)
+
 def xmbc_log_error(str):
     xbmc.log(str, level=xbmc.LOGERROR)
