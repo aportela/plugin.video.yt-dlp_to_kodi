@@ -2,7 +2,6 @@
 
 import xbmc
 import xbmcplugin
-import xbmcaddon
 import xbmcgui
 
 import os
@@ -10,10 +9,11 @@ from urllib.parse import quote_plus
 
 from .const import CACHE_PATH, ADDON, ADDON_HANDLE, ADDON_PLUGIN_URL, EXAMPLE_VIDEO_YOUTUBE_URL, EXAMPLE_VIDEO_TWITCH_URL
 from .nfo_generator import parse_nfo
+from .log import xmbc_log_error, xmbc_log_debug
 
 def menu_browse_directory(path):
     if not os.path.exists(path):
-        xbmc.log(f"yt-dlp_to_kodi: menu_browse_directory() -> path not found: {path}", level=xbmc.LOGERROR)
+        xmbc_log_error(f"yt-dlp_to_kodi: menu_browse_directory() -> path not found: {path}")
         xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30021)}: {path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
         return
     for entry in os.listdir(path):
@@ -80,7 +80,7 @@ def menu_browse_directory(path):
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
 
 def menu_browse_main():
-    xbmc.log(f"yt-dlp_to_kodi: cache_path: {CACHE_PATH}", level=xbmc.LOGDEBUG)
+    xmbc_log_debug(f"yt-dlp_to_kodi: cache_path: {CACHE_PATH}")
     item = xbmcgui.ListItem(label=ADDON.getLocalizedString(30001))
     url = f"{ADDON_PLUGIN_URL}?action=browse_cache&path={quote_plus(CACHE_PATH)}"
     xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, item, isFolder=True)

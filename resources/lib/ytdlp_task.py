@@ -16,12 +16,14 @@ from tempfile import gettempdir
 from .const import *
 
 from .nfo_generator import generate_nfo
+from .log import xmbc_log_error, xmbc_log_debug, xmbc_log_info
+from .notification import xmbc_notification_error, xmbc_notification_info
 
 def process_url(cache_path, url):
 
     if not os.path.exists(cache_path):
-        xbmc.log(f"yt-dlp_to_kodi: process_url() -> path not found: {cache_path}", level=xbmc.LOGERROR)
-        xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = f"{ADDON.getLocalizedString(30021)}: {cache_path}", icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
+        xmbc_log_error(f"yt-dlp_to_kodi: process_url() -> path not found: {cache_path}")
+        xmbc_notification_error(message = f"{ADDON.getLocalizedString(30021)}: {cache_path}")
         return
     else:
 
@@ -30,7 +32,7 @@ def process_url(cache_path, url):
             dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}: {url}")
 
         def ytdlp_download_to_cache_and_process():
-            xbmc.log(f"yt-dlp_to_kodi: using url {url}", level=xbmc.LOGINFO)
+            xmbc_log_info(f"yt-dlp_to_kodi: using url {url}")
             COMMAND_LINE_PARAM_OUTPUT_TEMPLATE_VALUE = f'{cache_path}{"" if cache_path.endswith(os.sep) else os.sep }%(webpage_url_domain)s/%(uploader)s - %(uploader_id)s/%(upload_date)s - %(title)s - %(id)s - %(height)sp - - %(vcodec)s - %(acodec)s.%(ext)s'
             COMMAND_LINE_MAX_VIDEO_HEIGHT=int(ADDON.getSetting('max_resolution')) or 1080
 
@@ -93,7 +95,7 @@ def process_url(cache_path, url):
                 # Write video metadata to a .info.json file (this may contain personal information)
                 commandline.insert((len(commandline) - 1), '--write-info-json')
 
-            xbmc.log(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}", level=xbmc.LOGINFO)
+            xmbc_log_info(f"yt-dlp_to_kodi: commandline => {' '.join(commandline)}")
 
             yt_dlp_proc = subprocess.Popen(commandline, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, universal_newlines = True, cwd = str(Path(gettempdir())))
 
@@ -113,7 +115,7 @@ def process_url(cache_path, url):
                 output_line = output.strip()
 
                 if ADDON.getSetting('debug') == "true":
-                    xbmc.log(f"yt-dlp_to_kodi: {output_line}", level=xbmc.LOGINFO)
+                    xmbc_log_info(f"yt-dlp_to_kodi: {output_line}")
 
                 patterns = [
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
@@ -134,19 +136,19 @@ def process_url(cache_path, url):
                                 dialog.update(int(percent), f"{ADDON.getLocalizedString(30029)}: {percent:.2f}%")
                         elif result_type == 'merger':
                             output_filename = result
-                            xbmc.log(f"yt-dlp_to_kodi: output file => {output_filename}", level=xbmc.LOGINFO)
+                            xmbc_log_info(f"yt-dlp_to_kodi: output file => {output_filename}")
                         elif result_type == 'thumbnail_path':
                             output_thumbnail = result
-                            xbmc.log(f"yt-dlp_to_kodi: output thumbnail => {output_thumbnail}", level=xbmc.LOGINFO)
+                            xmbc_log_info(f"yt-dlp_to_kodi: output thumbnail => {output_thumbnail}")
                         elif result_type == 'json_metadata_path':
                             output_json_metadata = result
-                            xbmc.log(f"yt-dlp_to_kodi: output json metadata => {output_json_metadata}", level=xbmc.LOGINFO)
+                            xmbc_log_info(f"yt-dlp_to_kodi: output json metadata => {output_json_metadata}")
                         elif result_type == 'already_downloaded':
                             output_filename = result
-                            xbmc.log(f"yt-dlp_to_kodi: already downloaded file => {output_filename}", level=xbmc.LOGINFO)
+                            xmbc_log_info(f"yt-dlp_to_kodi: already downloaded file => {output_filename}")
                         elif result_type == 'fixup':
                             output_filename = result
-                            xbmc.log(f"yt-dlp_to_kodi: fixup file => {output_filename}", level=xbmc.LOGINFO)
+                            xmbc_log_info(f"yt-dlp_to_kodi: fixup file => {output_filename}")
                         break
                 xbmc.sleep(100)
 
@@ -156,7 +158,7 @@ def process_url(cache_path, url):
 
             for error_line in yt_dlp_proc.stderr:
                 unsupported_url = True
-                xbmc.log(f"yt-dlp_to_kodi: {error_line}", level=xbmc.LOGERROR)
+                xmbc_log_error(f"yt-dlp_to_kodi: {error_line}")
                 for pattern, action in error_patterns:
                     match = re.search(pattern, error_line)
                     if match:
@@ -170,10 +172,10 @@ def process_url(cache_path, url):
                 dialog.close()
 
             if yt_dlp_proc.returncode == 0:
-                xbmc.log(f"yt-dlp_to_kodi: download success", level=xbmc.LOGDEBUG)
+                xmbc_log_debug(f"yt-dlp_to_kodi: download success")
 
                 if ADDON.getSetting('save_nfo') == "true":
-                    xbmc.log(f"yt-dlp_to_kodi: json: {output_json_metadata}", level=xbmc.LOGERROR)
+                    xmbc_log_error(f"yt-dlp_to_kodi: json: {output_json_metadata}")
                     if os.path.exists(output_json_metadata):
                         output_directory = os.path.dirname(output_filename)
                         output_base_name = os.path.splitext(os.path.basename(output_filename))[0]
@@ -191,10 +193,10 @@ def process_url(cache_path, url):
                     #xbmc.executebuiltin(f'RunPlugin("plugin://{ ADDON_ID }/?action=play_cache_item&path={quote_plus(file)}')
 
                 else:
-                    xbmc.log(f"yt-dlp_to_kodi: file not found {output_filename}", level=xbmc.LOGERROR)
+                    xmbc_log_error(f"yt-dlp_to_kodi: file not found {output_filename}")
                     xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30023), icon = xbmcgui.NOTIFICATION_ERROR, time = DEFAULT_NOTIFICATION_MILLISECONDS)
             else:
-                xbmc.log(f"yt-dlp_to_kodi: download error", level=xbmc.LOGINFO)
+                xmbc_log_info(f"yt-dlp_to_kodi: download error")
                 if unsupported_url is True:
                     xbmcgui.Dialog().notification(heading = "yt-dlp_to_kodi", message = ADDON.getLocalizedString(30024), icon = xbmcgui.NOTIFICATION_WARNING, time = DEFAULT_NOTIFICATION_MILLISECONDS)
                 else:
