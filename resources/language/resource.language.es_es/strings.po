@@ -74,6 +74,10 @@ msgctxt "#30031"
 msgid "Error getting yt-dlp version"
 msgstr "Error obteniendo la versión de yt-dlp"
 
+msgctxt "#30032"
+msgid "Downloading"
+msgstr "Descargando"
+
 msgctxt "#30051"
 msgid "General"
 msgstr "General"
