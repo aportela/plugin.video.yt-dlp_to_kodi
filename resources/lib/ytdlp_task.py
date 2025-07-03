@@ -27,9 +27,11 @@ def process_url(cache_path, url):
         return
     else:
 
+        dialog = xbmcgui.DialogProgress() if SHOW_ADDON_BIG_DIALOG else xbmcgui.DialogProgressBG()
         if SHOW_ADDON_BIG_DIALOG:
-            dialog = xbmcgui.DialogProgress()
             dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}: {url}")
+        else:
+            dialog.create("yt-dlp to kodi", f"{ADDON.getLocalizedString(30028)}")
 
         def ytdlp_download_to_cache_and_process():
             xmbc_log_info(f"yt-dlp_to_kodi: using url {url}")
@@ -119,6 +121,7 @@ def process_url(cache_path, url):
 
                 patterns = [
                     (r'\[download\]\s*(\d+\.\d+)%', lambda match: ('percent', float(match.group(1)))),
+                    (r'\[download\] Destination: (.*)$', lambda match: ('destination_path', os.path.abspath(match.group(1).strip()))),
                     (r'\[Merger\] Merging formats into "(.*)"$', lambda match: ('merger', os.path.abspath(match.group(1).strip()))),
                     (r'\[info\] Writing video thumbnail \d+ to: (.*)$', lambda match: ('thumbnail_path', os.path.abspath(match.group(1).strip()))),
                     (r'Writing video metadata as JSON to: (.*)$', lambda match: ('json_metadata_path', os.path.abspath(match.group(1).strip()))),
@@ -133,10 +136,15 @@ def process_url(cache_path, url):
                         if result_type == 'percent':
                             percent = result
                             if SHOW_ADDON_BIG_DIALOG:
-                                dialog.update(int(percent), f"{ADDON.getLocalizedString(30029)}: {percent:.2f}%")
+                                dialog.update(percent = int(percent), message = f"{ADDON.getLocalizedString(30029)}: {percent:.2f}%")
+                            else:
+                                dialog.update(percent = int(percent), message = f"{ADDON.getLocalizedString(30032)}")
                         elif result_type == 'merger':
                             output_filename = result
                             xmbc_log_info(f"yt-dlp_to_kodi: output file => {output_filename}")
+                        elif result_type == 'destination_path':
+                            destination = result
+                            xmbc_log_info(f"yt-dlp_to_kodi: destination => {destination}")
                         elif result_type == 'thumbnail_path':
                             output_thumbnail = result
                             xmbc_log_info(f"yt-dlp_to_kodi: output thumbnail => {output_thumbnail}")
@@ -168,8 +176,7 @@ def process_url(cache_path, url):
 
             yt_dlp_proc.communicate()
 
-            if SHOW_ADDON_BIG_DIALOG:
-                dialog.close()
+            dialog.close()
 
             if yt_dlp_proc.returncode == 0:
                 xmbc_log_debug(f"yt-dlp_to_kodi: download success")
